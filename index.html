@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Algebra & Arithmetic Quiz</title>
+<style>
+  :root {
+    --paper: #eef3f8;
+    --grid: #d5e0ec;
+    --ink: #1b2a41;
+    --muted: #5b6b82;
+    --card: #ffffff;
+    --line: #cdd8e5;
+    --accent: #1f6feb;
+    --accent-dark: #1757bd;
+    --good: #1a7f4b;
+    --good-bg: #e6f5ec;
+    --bad: #c0392b;
+    --bad-bg: #fdecea;
+    --easy: #1a7f4b;
+    --medium: #b86e00;
+    --hard: #c0392b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 28px 28px;
+    line-height: 1.5;
+    padding: 24px 16px 48px;
+  }
+  main { max-width: 680px; margin: 0 auto; }
+  h1, h2, h3 { font-family: Georgia, "Times New Roman", serif; margin: 0; }
+  header { text-align: center; margin-bottom: 20px; }
+  header h1 { font-size: 1.9rem; }
+  header p { margin: 6px 0 0; color: var(--muted); }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 28px;
+    box-shadow: 0 6px 24px rgba(27, 42, 65, .08);
+  }
+  .hidden { display: none; }
+
+  /* Progress */
+  .meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: .95rem; color: var(--muted); }
+  .bar { height: 8px; background: var(--paper); border-radius: 99px; overflow: hidden; margin-bottom: 24px; }
+  .bar span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s ease; }
+
+  .badge {
+    display: inline-block; padding: 2px 10px; border-radius: 99px;
+    font-size: .8rem; font-weight: 600; border: 1px solid currentColor;
+  }
+  .badge.easy { color: var(--easy); }
+  .badge.medium { color: var(--medium); }
+  .badge.hard { color: var(--hard); }
+
+  .question { font-size: 1.45rem; line-height: 1.35; margin-bottom: 22px; }
+
+  .options { display: grid; gap: 12px; margin: 0; padding: 0; border: 0; }
+  .option { position: relative; }
+  .option input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .option label {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px; border: 2px solid var(--line); border-radius: 10px;
+    cursor: pointer; transition: border-color .15s, background .15s;
+    font-size: 1.05rem;
+  }
+  .option .letter {
+    flex: none; width: 34px; height: 34px; border-radius: 8px;
+    display: grid; place-items: center; font-weight: 700;
+    background: var(--paper); color: var(--ink);
+  }
+  .option label:hover { border-color: var(--accent); }
+  .option input:checked + label { border-color: var(--accent); background: #eaf2ff; }
+  .option input:checked + label .letter { background: var(--accent); color: #fff; }
+  .option input:focus-visible + label { outline: 3px solid #9ec3ff; outline-offset: 2px; }
+
+  .actions { display: flex; justify-content: flex-end; margin-top: 24px; }
+  button {
+    font: inherit; font-weight: 600; cursor: pointer;
+    background: var(--accent); color: #fff; border: 0;
+    padding: 12px 26px; border-radius: 10px; transition: background .15s;
+  }
+  button:hover:not(:disabled) { background: var(--accent-dark); }
+  button:disabled { background: #a9b8cc; cursor: not-allowed; }
+  button:focus-visible { outline: 3px solid #9ec3ff; outline-offset: 2px; }
+  button.secondary { background: transparent; color: var(--accent); border: 2px solid var(--accent); }
+  button.secondary:hover { background: #eaf2ff !important; }
+
+  /* Results */
+  .score-wrap { text-align: center; padding: 8px 0 24px; }
+  .score-ring {
+    width: 150px; height: 150px; border-radius: 50%; margin: 0 auto 16px;
+    display: grid; place-items: center;
+    background: conic-gradient(var(--accent) calc(var(--pct) * 1%), var(--paper) 0);
+  }
+  .score-ring div {
+    width: 118px; height: 118px; border-radius: 50%; background: var(--card);
+    display: grid; place-items: center;
+    font-family: Georgia, serif; font-size: 2.2rem; font-weight: 700;
+  }
+  .score-wrap h2 { font-size: 1.5rem; }
+  .score-wrap p { color: var(--muted); margin: 6px 0 18px; }
+
+  .key-title { font-size: 1.3rem; margin: 8px 0 14px; }
+  .key-item { border: 1px solid var(--line); border-left-width: 6px; border-radius: 10px; padding: 14px 16px; margin-bottom: 12px; }
+  .key-item.right { border-left-color: var(--good); background: var(--good-bg); }
+  .key-item.wrong { border-left-color: var(--bad); background: var(--bad-bg); }
+  .key-head { display: flex; justify-content: space-between; gap: 10px; align-items: center; margin-bottom: 6px; font-weight: 700; }
+  .status.right { color: var(--good); }
+  .status.wrong { color: var(--bad); }
+  .key-q { margin: 0 0 8px; font-weight: 600; }
+  .key-line { margin: 2px 0; font-size: .95rem; }
+  .key-expl { margin: 8px 0 0; font-size: .93rem; color: var(--muted); }
+
+  @media (max-width: 520px) {
+    .card { padding: 20px 16px; }
+    .question { font-size: 1.25rem; }
+    header h1 { font-size: 1.6rem; }
+    .actions button { width: 100%; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Algebra &amp; Arithmetic Quiz</h1>
+    <p>10 questions · choose one answer for each</p>
+  </header>
+
+  <section id="quiz" class="card" aria-live="polite">
+    <div class="meta">
+      <span id="counter">Question 1 of 10</span>
+      <span id="badge" class="badge easy">Easy</span>
+    </div>
+    <div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0"><span id="progress"></span></div>
+    <h2 id="question" class="question"></h2>
+    <fieldset class="options" id="options" style="min-width:0">
+      <legend class="hidden">Answer options</legend>
+    </fieldset>
+    <div class="actions">
+      <button id="next" disabled>Next question</button>
+    </div>
+  </section>
+
+  <section id="results" class="card hidden">
+    <div class="score-wrap">
+      <div class="score-ring" id="ring"><div id="scoreText"></div></div>
+      <h2 id="verdict"></h2>
+      <p id="scoreDetail"></p>
+      <button id="restart" class="secondary">Try again</button>
+    </div>
+    <h3 class="key-title">Answer key</h3>
+    <div id="key"></div>
+  </section>
+</main>
+
+<script>
+(function () {
+  var LETTERS = ["A", "B", "C", "D"];
+  var QUESTIONS = [
+    { level: "Easy", q: "What is 15 + 27 ÷ 3?",
+      options: ["14", "24", "32", "42"], answer: 1,
+      why: "Division comes first: 27 ÷ 3 = 9, then 15 + 9 = 24." },
+    { level: "Easy", q: "Solve for x: x + 9 = 21",
+      options: ["12", "10", "11", "30"], answer: 0,
+      why: "Subtract 9 from both sides: x = 21 − 9 = 12." },
+    { level: "Easy", q: "What is 3/4 of 80?",
+      options: ["48", "55", "64", "60"], answer: 3,
+      why: "80 ÷ 4 = 20, and 20 × 3 = 60." },
+    { level: "Medium", q: "Solve for x: 3x − 7 = 11",
+      options: ["6", "4", "5", "18"], answer: 0,
+      why: "Add 7: 3x = 18. Divide by 3: x = 6." },
+    { level: "Medium", q: "Simplify: 2(3x + 4) − 5x",
+      options: ["11x + 8", "x + 4", "x + 8", "11x + 4"], answer: 2,
+      why: "Expand: 6x + 8 − 5x. Combine like terms: x + 8." },
+    { level: "Medium", q: "What is the value of (−3)² − 2³ + 4?",
+      options: ["−13", "5", "21", "3"], answer: 1,
+      why: "(−3)² = 9 and 2³ = 8, so 9 − 8 + 4 = 5." },
+    { level: "Medium", q: "20% of a number is 14. What is the number?",
+      options: ["2.8", "34", "280", "70"], answer: 3,
+      why: "0.2 × n = 14, so n = 14 ÷ 0.2 = 70." },
+    { level: "Hard", q: "Solve for x: 2(x − 3) = 5x + 9",
+      options: ["5", "−3", "−1", "−5"], answer: 3,
+      why: "2x − 6 = 5x + 9 → −15 = 3x → x = −5." },
+    { level: "Hard", q: "What are the solutions of x² − 5x + 6 = 0?",
+      options: ["x = 1 and x = 6", "x = 2 and x = 3", "x = −2 and x = −3", "x = −1 and x = −6"], answer: 1,
+      why: "Factor: (x − 2)(x − 3) = 0, so x = 2 or x = 3." },
+    { level: "Hard", q: "If 3x + 2y = 16 and x − y = 2, what is x?",
+      options: ["2", "3", "4", "6"], answer: 2,
+      why: "From the second equation x = y + 2. Substitute: 3(y + 2) + 2y = 16 → 5y = 10 → y = 2, so x = 4." }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var current = 0;
+  var picks = [];
+
+  function renderQuestion() {
+    var item = QUESTIONS[current];
+    $("counter").textContent = "Question " + (current + 1) + " of " + QUESTIONS.length;
+    var badge = $("badge");
+    badge.textContent = item.level;
+    badge.className = "badge " + item.level.toLowerCase();
+    $("progress").style.width = (current / QUESTIONS.length * 100) + "%";
+    document.querySelector(".bar").setAttribute("aria-valuenow", current);
+    $("question").textContent = item.q;
+
+    var box = $("options");
+    box.querySelectorAll(".option").forEach(function (n) { n.remove(); });
+    item.options.forEach(function (text, i) {
+      var wrap = document.createElement("div");
+      wrap.className = "option";
+      var input = document.createElement("input");
+      input.type = "radio"; input.name = "answer"; input.id = "opt" + i; input.value = i;
+      input.addEventListener("change", function () { $("next").disabled = false; });
+      var label = document.createElement("label");
+      label.htmlFor = "opt" + i;
+      var letter = document.createElement("span");
+      letter.className = "letter"; letter.textContent = LETTERS[i];
+      var span = document.createElement("span");
+      span.textContent = text;
+      label.appendChild(letter); label.appendChild(span);
+      wrap.appendChild(input); wrap.appendChild(label);
+      box.appendChild(wrap);
+    });
+    $("next").disabled = true;
+    $("next").textContent = current === QUESTIONS.length - 1 ? "Finish quiz" : "Next question";
+  }
+
+  function onNext() {
+    var chosen = document.querySelector('input[name="answer"]:checked');
+    if (!chosen) return;
+    picks[current] = Number(chosen.value);
+    current++;
+    if (current < QUESTIONS.length) renderQuestion();
+    else showResults();
+  }
+
+  function el(tag, cls, text) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (text !== undefined) n.textContent = text;
+    return n;
+  }
+
+  function showResults() {
+    var score = 0;
+    QUESTIONS.forEach(function (q, i) { if (picks[i] === q.answer) score++; });
+    var pct = Math.round(score / QUESTIONS.length * 100);
+
+    $("quiz").classList.add("hidden");
+    $("results").classList.remove("hidden");
+    $("ring").style.setProperty("--pct", pct);
+    $("scoreText").textContent = score + "/" + QUESTIONS.length;
+    $("verdict").textContent =
+      pct === 100 ? "Perfect score!" :
+      pct >= 80 ? "Great work!" :
+      pct >= 60 ? "Good effort!" :
+      "Keep practicing!";
+    $("scoreDetail").textContent = "You answered " + score + " of " + QUESTIONS.length + " correctly (" + pct + "%).";
+
+    var key = $("key");
+    key.textContent = "";
+    QUESTIONS.forEach(function (q, i) {
+      var ok = picks[i] === q.answer;
+      var card = el("div", "key-item " + (ok ? "right" : "wrong"));
+      var head = el("div", "key-head");
+      head.appendChild(el("span", "", "Question " + (i + 1) + " · " + q.level));
+      head.appendChild(el("span", "status " + (ok ? "right" : "wrong"), ok ? "✓ Correct" : "✗ Incorrect"));
+      card.appendChild(head);
+      card.appendChild(el("p", "key-q", q.q));
+      card.appendChild(el("p", "key-line", "Your answer: " + LETTERS[picks[i]] + ". " + q.options[picks[i]]));
+      if (!ok) card.appendChild(el("p", "key-line", "Correct answer: " + LETTERS[q.answer] + ". " + q.options[q.answer]));
+      card.appendChild(el("p", "key-expl", q.why));
+      key.appendChild(card);
+    });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  function restart() {
+    current = 0; picks = [];
+    $("results").classList.add("hidden");
+    $("quiz").classList.remove("hidden");
+    renderQuestion();
+    window.scrollTo({ top: 0 });
+  }
+
+  $("next").addEventListener("click", onNext);
+  $("restart").addEventListener("click", restart);
+  renderQuestion();
+})();
+</script>
+</body>
+</html>
